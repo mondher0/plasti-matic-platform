@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — validated categorical/status/chart palette (see the
+ * data-viz skill's reference palette). Light values are the default;
+ * dark values apply under the `.dark` class toggled by ThemeProvider.
+ */
+@layer base {
+  :root {
+    /* Plasti Matic identity: safety-orange accent (the brand sells
+       workwear/PPE — this reads as authentic, not decorative) on a clean
+       warm-neutral surface, replacing the previous generic shadcn blue-on-
+       cream defaults. */
+    --background: 30 20% 99%;
+    --foreground: 20 14% 9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 9%;
+
+    --primary: 24 95% 53%;
+    --primary-dark: 20 90% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 20 14% 95%;
+    --secondary-foreground: 20 14% 9%;
+
+    --muted: 20 14% 95%;
+    --muted-foreground: 20 8% 40%;
+
+    --accent: 20 14% 92%;
+    --accent-foreground: 20 14% 9%;
+
+    --destructive: 0 61.3% 52.4%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 86.3% 34.3%;
+    --success-foreground: 0 0% 100%;
+    --warning: 40.8 95.7% 53.9%;
+    --warning-foreground: 0 0% 4.3%;
+
+    --border: 20 13% 89%;
+    --input: 20 13% 89%;
+    --ring: 24 95% 53%;
+    --radius: 0.85rem;
+
+    --chart-1: 212.8 67.7% 50.2%;
+    --chart-2: 17 82.1% 56.3%;
+    --chart-3: 158.5 73.3% 39.6%;
+    --chart-4: 40.8 100% 46.5%;
+    --chart-5: 337.4 70.3% 69.6%;
+
+    --status-good: 120 86.3% 34.3%;
+    --status-warning: 40.8 95.7% 53.9%;
+    --status-serious: 16.8 79.3% 63.9%;
+    --status-critical: 0 61.3% 52.4%;
+  }
+
+  .dark {
+    --background: 20 10% 6%;
+    --foreground: 0 0% 100%;
+
+    --card: 20 8% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 20 8% 10%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 24 95% 58%;
+    --primary-dark: 22 90% 46%;
+    --primary-foreground: 20 14% 9%;
+
+    --secondary: 20 6% 16%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 20 6% 16%;
+    --muted-foreground: 20 8% 70%;
+
+    --accent: 20 6% 20%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 71.8% 65.3%;
+    --destructive-foreground: 0 0% 4.3%;
+
+    --success: 120 86.3% 34.3%;
+    --success-foreground: 0 0% 100%;
+    --warning: 39.7 100% 39.4%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 20 6% 18%;
+    --input: 20 6% 18%;
+    --ring: 24 95% 58%;
+
+    --chart-1: 212.8 76.8% 56.1%;
+    --chart-2: 17.1 70.2% 50%;
+    --chart-3: 159.2 72.7% 35.9%;
+    --chart-4: 39.7 100% 39.4%;
+    --chart-5: 338.2 61.1% 57.6%;
+
+    --status-good: 120 86.3% 34.3%;
+    --status-warning: 39.7 100% 39.4%;
+    --status-serious: 16.8 79.3% 63.9%;
+    --status-critical: 0 61.3% 52.4%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}

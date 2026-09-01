@@ -1,0 +1,32 @@
+{
+  "name": "plasti-matic-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Plasti Matic internal dashboard + e-commerce platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace=apps/api",
+    "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:shop": "npm run dev --workspace=apps/shop",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=apps/api && npm run build --workspace=apps/dashboard && npm run build --workspace=apps/shop",
+    "build:shared": "npm run build --workspace=packages/shared",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "prisma:generate": "npm run prisma:generate --workspace=apps/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace=apps/api",
+    "prisma:seed": "npm run prisma:seed --workspace=apps/api",
+    "test": "npm run test --workspace=packages/shared && npm run test --workspace=apps/api && npm run test --workspace=apps/dashboard && npm run test --workspace=apps/shop",
+    "test:e2e": "npm run test:e2e --workspace=apps/api",
+    "test:all": "npm run test && npm run test:e2e"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,7 @@
+import type { Decimal } from '@prisma/client/runtime/library';
+
+/** Prisma returns Decimal fields as Decimal.js instances; API responses use plain numbers. */
+export function toNumber(value: Decimal | number | null | undefined): number {
+  if (value === null || value === undefined) return 0;
+  return typeof value === 'number' ? value : Number(value.toString());
+}

@@ -1,0 +1,237 @@
+// Plasti Matic platform — Prisma schema
+// Enums below are mirrored by hand in packages/shared/src/schemas/enums.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+enum ProductionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(CUSTOMER)
+  status       UserStatus @default(ACTIVE)
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  mustChangePassword Boolean @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  orders    Order[]
+  cart      Cart?
+  addresses Address[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  images      String[]
+  isActive    Boolean  @default(true)
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category         @relation(fields: [categoryId], references: [id])
+  variants ProductVariant[]
+
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model ProductVariant {
+  id                String   @id @default(cuid())
+  productId         String
+  sku               String   @unique
+  size              String
+  color             String
+  price             Decimal  @db.Decimal(10, 2)
+  costPrice         Decimal  @db.Decimal(10, 2)
+  quantity          Int      @default(0)
+  lowStockThreshold Int      @default(10)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  product           Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  stockMovements    StockMovement[]
+  productionBatches ProductionBatch[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+
+  @@unique([productId, size, color])
+  @@index([productId])
+  @@index([quantity])
+}
+
+model StockMovement {
+  id          String            @id @default(cuid())
+  variantId   String
+  type        StockMovementType
+  quantity    Int
+  reason      String?
+  reference   String?
+  createdById String?
+  createdAt   DateTime          @default(now())
+
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([variantId, createdAt])
+  @@index([createdAt])
+}
+
+model ProductionBatch {
+  id          String           @id @default(cuid())
+  batchNumber String           @unique
+  variantId   String
+  plannedQty  Int
+  producedQty Int              @default(0)
+  defectQty   Int              @default(0)
+  startDate   DateTime
+  endDate     DateTime?
+  status      ProductionStatus @default(PLANNED)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([variantId])
+  @@index([status, endDate])
+}
+
+model Cart {
+  id           String   @id @default(cuid())
+  userId       String?  @unique
+  sessionToken String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id])
+  items CartItem[]
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([cartId, variantId])
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String?
+  fullName   String
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  postalCode String
+  country    String
+  createdAt  DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  orders Order[]
+
+  @@index([userId])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  orderNumber   String        @unique
+  userId        String?
+  guestEmail    String?
+  addressId     String
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  subtotal      Decimal       @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  confirmedAt   DateTime?
+  shippedAt     DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user    User?       @relation(fields: [userId], references: [id])
+  address Address     @relation(fields: [addressId], references: [id])
+  items   OrderItem[]
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  variantId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  lineTotal Decimal @db.Decimal(10, 2)
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+}

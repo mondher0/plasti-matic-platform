@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: plastimatic_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: plastimatic
+      POSTGRES_PASSWORD: plastimatic
+      POSTGRES_DB: plastimatic
+    ports:
+      - "5433:5432"
+    volumes:
+      - plastimatic_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plastimatic"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  plastimatic_db_data:

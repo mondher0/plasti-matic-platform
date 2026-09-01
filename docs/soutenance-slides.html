@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Soutenance Plasti Matic</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #FAFAF7;
+    --surface: #FFFFFF;
+    --surface-2: #F3F1EC;
+    --ink: #1C1E22;
+    --muted: #5B6169;
+    --accent: #B5541F;
+    --accent-ink: #ffffff;
+    --accent-soft: #F1E1D2;
+    --line: #E6E2DA;
+    --shadow: 0 1px 2px rgba(28,30,34,0.04), 0 8px 24px rgba(28,30,34,0.06);
+    --good: #2F7D4F;
+    --warn: #B5541F;
+  }
+  /* Deliberately single-theme: this is a defense deck presented from one
+     laptop, not a page viewed across arbitrary devices — a slide that
+     silently flips to dark because the projector's OS is set that way
+     would be a real problem mid-presentation, so the palette is fixed
+     regardless of system theme. */
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  h1, h2, h3 { font-family: "Spectral", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  code, .mono { font-family: "IBM Plex Mono", "SF Mono", Consolas, monospace; }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  *:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  /* ---------- deck shell ---------- */
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(28px, 5vh, 64px) clamp(32px, 7vw, 110px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(0);
+    transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
+    z-index: 1;
+  }
+  .slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); z-index: 2; }
+  .slide.enter-from-right { transform: translateX(56px); }
+  .slide.enter-from-left { transform: translateX(-56px); }
+  .slide.exit-left { transform: translateX(-56px); opacity: 0; }
+  .slide.exit-right { transform: translateX(56px); opacity: 0; }
+
+  @keyframes revealUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  .eyebrow {
+    display: flex; align-items: center; gap: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(10px, 1vw, 12px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: clamp(10px, 2vh, 20px);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 22px; height: 2px; background: var(--accent); display: inline-block;
+  }
+
+  .slide h2.title {
+    font-size: clamp(26px, 3.6vw, 46px);
+    line-height: 1.08;
+    margin-bottom: clamp(14px, 2.6vh, 28px);
+    max-width: 22ch;
+  }
+  .slide .lede {
+    font-size: clamp(14px, 1.35vw, 18px);
+    color: var(--muted);
+    max-width: 62ch;
+    margin-bottom: clamp(14px, 2.6vh, 26px);
+    line-height: 1.5;
+  }
+  .body-area {
+    flex: 0 1 auto; max-height: 64vh; overflow: auto;
+    display: flex; flex-direction: column; gap: clamp(10px, 1.8vh, 18px);
+  }
+
+  ul.points, ol.points { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: clamp(9px, 1.6vh, 15px); }
+  ul.points li, ol.points li {
+    position: relative; padding-left: 26px;
+    font-size: clamp(14px, 1.3vw, 18px); line-height: 1.5;
+  }
+  ul.points li::before {
+    content: ""; position: absolute; left: 0; top: 0.6em;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  }
+  ol.points { counter-reset: pt; }
+  ol.points li { counter-increment: pt; padding-left: 34px; }
+  ol.points li::before {
+    content: counter(pt);
+    position: absolute; left: 0; top: -1px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent);
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ul.points b, ol.points b { color: var(--ink); }
+
+  .grid { display: grid; gap: clamp(12px, 1.6vw, 22px); }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(14px, 1.8vw, 22px); box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .card h4 {
+    font-family: "IBM Plex Sans", sans-serif; font-weight: 600;
+    font-size: clamp(13px, 1.15vw, 16px); color: var(--accent); margin: 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card p, .card li { font-size: clamp(12.5px, 1.05vw, 15px); color: var(--muted); line-height: 1.5; }
+  .card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 500;
+    padding: 3px 11px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent); border: 1px solid transparent;
+  }
+  .pill.ghost { background: transparent; border-color: var(--line); color: var(--muted); }
+  .pill.good { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+
+  table { width: 100%; border-collapse: collapse; font-size: clamp(12px, 1.05vw, 15px); }
+  th {
+    text-align: left; font-weight: 600; color: var(--muted);
+    font-size: clamp(10.5px, 0.85vw, 12px); text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 8px 14px; border-bottom: 2px solid var(--line);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .diagram {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(16px, 2vw, 26px);
+    font-family: "IBM Plex Mono", monospace; font-size: clamp(11px, 0.95vw, 13.5px);
+    line-height: 1.75; white-space: pre; overflow: auto; color: var(--ink);
+  }
+  .diagram .dim { color: var(--muted); }
+  .diagram .acc { color: var(--accent); font-weight: 500; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    border-radius: 0 12px 12px 0; padding: 12px 16px;
+    font-size: clamp(12.5px, 1.05vw, 15px); color: var(--ink); line-height: 1.5;
+  }
+  .callout b { color: var(--accent); }
+
+  .stat-row { display: flex; gap: clamp(10px, 1.6vw, 20px); }
+  .stat { flex: 1; text-align: center; padding: clamp(10px, 1.4vw, 18px) 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+  .stat .num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-size: clamp(20px, 2.4vw, 32px); font-weight: 500; color: var(--accent); }
+  .stat .lbl { font-size: clamp(10px, 0.85vw, 12px); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+  /* ---------- cover / closing (share the same centered-title vocabulary) ---------- */
+  .slide.cover, .slide.closing { align-items: center; justify-content: center; text-align: center; }
+  .badge {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--accent-soft); background: var(--accent-soft);
+    padding: 6px 16px; border-radius: 999px; margin-bottom: 28px;
+  }
+  .cover h1 { font-size: clamp(42px, 7vw, 84px); line-height: 1; }
+  .cover h1 .m, .closing h1 .m { font-style: italic; font-weight: 500; color: var(--accent); }
+  .cover .sub { font-size: clamp(15px, 1.5vw, 20px); color: var(--muted); margin: 18px 0 40px; max-width: 46ch; }
+  .credit {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 46px;
+    font-size: clamp(13px, 1.1vw, 15px); color: var(--muted);
+  }
+  .credit .name { font-family: "Spectral", serif; font-size: clamp(18px, 1.7vw, 22px); color: var(--ink); font-weight: 600; }
+
+  /* ---------- closing ---------- */
+  .slide.closing { align-items: center; justify-content: center; text-align: center; }
+
+  /* ---------- chrome ---------- */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px; background: var(--accent);
+    z-index: 50; transition: width 0.3s ease;
+  }
+  .chrome {
+    position: fixed; bottom: 18px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    z-index: 50; pointer-events: none;
+  }
+  .chrome > * { pointer-events: auto; }
+  .nav-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow);
+    transition: background 0.15s, transform 0.15s;
+  }
+  .nav-btn:hover { background: var(--accent-soft); }
+  .nav-btn:active { transform: scale(0.94); }
+  .counter {
+    font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums;
+    font-size: 12.5px; color: var(--muted); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 16px; box-shadow: var(--shadow);
+  }
+  .eyebrow-slidenum { position: fixed; top: 22px; right: 28px; z-index: 50; }
+
+  @media (max-width: 720px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 : COVER -->
+  <section class="slide cover active" data-eyebrow="Ouverture">
+    <div class="badge">Soutenance de stage — M1 MIAGE 2025 / 2026</div>
+    <h1><span>Plasti</span> <span class="m">Matic</span></h1>
+    <p class="sub">Conception et développement d'une plateforme de gestion interne et d'une boutique en ligne pour un fabricant industriel</p>
+    <div class="stat-row" style="max-width:520px;">
+      <div class="stat"><div class="num">2</div><div class="lbl">Applications</div></div>
+      <div class="stat"><div class="num">25+</div><div class="lbl">Endpoints API</div></div>
+      <div class="stat"><div class="num">36</div><div class="lbl">Tests automatisés</div></div>
+    </div>
+    <div class="credit">
+      <span class="name">Rayan Benaksas</span>
+      <span>Étudiant M1 MIAGE — EURL Plasti Matic, Bordj Bou Arreridj, Algérie</span>
+    </div>
+  </section>
+
+  <!-- 2 : SOMMAIRE -->
+  <section class="slide" data-eyebrow="Sommaire">
+    <div class="eyebrow">Plan de la soutenance</div>
+    <h2 class="title">Ce que nous allons voir</h2>
+    <div class="body-area">
+      <div class="grid grid-2" style="gap:10px 40px;">
+        <ol class="points" style="gap:11px;">
+          <li>L'entreprise et le cahier des charges</li>
+          <li>Architecture technique et modèle de données</li>
+          <li>Le tableau de bord : catalogue, stock, production</li>
+          <li>Les commandes et la recherche côté serveur</li>
+          <li>Les indicateurs (KPI) de base et avancés</li>
+          <li>La boutique en ligne et le compte client</li>
+        </ol>
+        <ol class="points" style="gap:11px; counter-reset: pt 6;">
+          <li>Le paiement réel avec Stripe</li>
+          <li>Comptes, rôles et sécurité</li>
+          <li>Qualité : les tests automatisés</li>
+          <li>Bugs réels rencontrés et corrigés</li>
+          <li>Déploiement, limites et perspectives</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 : ENTREPRISE -->
+  <section class="slide" data-eyebrow="Contexte">
+    <div class="eyebrow">1 · Contexte</div>
+    <h2 class="title">EURL Plasti Matic</h2>
+    <p class="lede">Une entreprise industrielle algérienne, sans outil numérique avant ce projet.</p>
+    <div class="body-area">
+      <div class="grid grid-3">
+        <div class="card">
+          <h4>📍 Localisation</h4>
+          <p>Bordj Bou Arreridj, Algérie</p>
+        </div>
+        <div class="card">
+          <h4>🏭 Activité</h4>
+          <p>Fabrication de vêtements de travail, équipements de protection individuelle (EPI) et chaussures de sécurité industrielles</p>
+        </div>
+        <div class="card">
+          <h4>⚠️ Constat de départ</h4>
+          <p>Gestion du stock et de la production sur support artisanal, aucune vente en ligne</p>
+        </div>
+      </div>
+      <div class="callout">
+        <b>Le besoin :</b> un outil pour piloter le stock et la production en interne, et un canal de vente directe au client — sans dupliquer l'information entre les deux.
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 : CAHIER DES CHARGES -->
+  <section class="slide" data-eyebrow="Contexte">
+    <div class="eyebrow">1 · Contexte</div>
+    <h2 class="title">Deux besoins, une seule base</h2>
+    <div class="body-area">
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>📊 Tableau de bord interne</h4>
+          <p>Réservé au personnel : catalogue produit, stock, production, commandes, utilisateurs, indicateurs de performance.</p>
+        </div>
+        <div class="card">
+          <h4>🛒 Boutique en ligne</h4>
+          <p>Publique : parcours du catalogue, panier, compte client ou commande invité, paiement réel.</p>
+        </div>
+      </div>
+      <div class="callout">
+        <b>Choix d'architecture :</b> les deux applications partagent la même base de données, la même API et les mêmes règles de validation — une vente sur la boutique met à jour le stock visible dans le tableau de bord sans aucune synchronisation manuelle.
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 : STACK -->
+  <section class="slide" data-eyebrow="Architecture">
+    <div class="eyebrow">2 · Architecture</div>
+    <h2 class="title">Stack technologique</h2>
+    <div class="body-area">
+      <table>
+        <tr><th>Couche</th><th>Choix</th></tr>
+        <tr><td>Back-end</td><td>NestJS · Prisma ORM · PostgreSQL · JWT (rôles) · validation Zod · Swagger</td></tr>
+        <tr><td>Front-ends</td><td>React · TypeScript · Vite · TanStack Query · shadcn/ui · Tailwind CSS · Recharts</td></tr>
+        <tr><td>Partagé</td><td><code>packages/shared</code> — schémas Zod comme source unique de vérité</td></tr>
+        <tr><td>Paiement</td><td>Stripe Checkout (mode test) + webhooks signés</td></tr>
+        <tr><td>Tests</td><td>Jest (API) · Vitest + Testing Library (front-ends)</td></tr>
+      </table>
+      <div class="callout">
+        <b>Pourquoi Zod partagé ?</b> un schéma défini une fois sert à la fois de validation côté API, de type TypeScript, et de validation de formulaire côté client — impossible que le front envoie une donnée que l'API n'attend pas.
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 : MODELE DE DONNEES -->
+  <section class="slide" data-eyebrow="Architecture">
+    <div class="eyebrow">2 · Architecture</div>
+    <h2 class="title">Catalogue, Stock, Production</h2>
+    <p class="lede">Trois sections reliées par une seule clé : le SKU (<code>ProductVariant</code>).</p>
+    <div class="body-area">
+      <div class="diagram"><span class="acc">ProductVariant</span> (SKU : taille + couleur d'un produit)
+  <span class="dim">référencé par :</span>
+    ├── ProductionBatch   <span class="dim">→ un lot de fabrication</span>
+    ├── OrderItem         <span class="dim">→ une ligne de commande</span>
+    └── StockMovement     <span class="dim">→ le ledger de mouvements</span>
+
+  lot TERMINÉ        ──► + quantité produite  ─┐
+  commande payée     ──► − quantité vendue     ─┼──► <span class="acc">ProductVariant.quantity</span>
+  mouvement manuel   ──► ± quantité            ─┘     + nouvelle ligne StockMovement</div>
+      <div class="callout">
+        <b>Règle d'or :</b> chaque changement de <code>quantity</code> écrit, dans la même transaction, une ligne dans le ledger <code>StockMovement</code> — l'historique du stock est toujours reconstituable, ce qui rend possibles les KPI avancés.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 : DASHBOARD - CATALOGUE -->
+  <section class="slide" data-eyebrow="Dashboard">
+    <div class="eyebrow">3 · Tableau de bord</div>
+    <h2 class="title">Catalogue</h2>
+    <div class="body-area">
+      <ul class="points">
+        <li>Création et modification de produits avec <b>upload d'images réelles</b> (JPG / PNG / WEBP / GIF, 5 Mo max)</li>
+        <li>Gestion des variantes : taille, couleur, SKU, prix de vente, prix de revient, seuil d'alerte de stock</li>
+        <li>Recherche et filtre par catégorie</li>
+        <li>Un produit avec historique (stock, commandes, production) ne peut pas être supprimé — seulement <b>désactivé</b>, pour ne jamais casser la traçabilité</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8 : DASHBOARD - STOCK/PRODUCTION -->
+  <section class="slide" data-eyebrow="Dashboard">
+    <div class="eyebrow">3 · Tableau de bord</div>
+    <h2 class="title">Stock &amp; Production</h2>
+    <div class="body-area">
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>📦 Stock</h4>
+          <ul>
+            <li>Niveaux de stock par SKU, statut <span class="pill good">OK</span> / <span class="pill" style="background:color-mix(in srgb, var(--warn) 16%, transparent); color:var(--warn);">Stock bas</span></li>
+            <li>Historique complet des mouvements (entrée / sortie / ajustement)</li>
+            <li>Saisie manuelle pour les corrections (réception, casse, inventaire)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>🏭 Production</h4>
+          <ul>
+            <li>Lot de fabrication rattaché à un SKU précis</li>
+            <li>Cycle : <span class="pill ghost">Planifié</span> → <span class="pill ghost">En cours</span> → <span class="pill good">Terminé</span></li>
+            <li><b>Passer un lot à « Terminé » ajoute automatiquement la quantité produite au stock</b></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 : COMMANDES + FILTRES -->
+  <section class="slide" data-eyebrow="Dashboard">
+    <div class="eyebrow">3 · Tableau de bord</div>
+    <h2 class="title">Commandes &amp; recherche serveur</h2>
+    <p class="lede">Chaque filtre déclenche une vraie requête à l'API, pas un simple tri en mémoire.</p>
+    <div class="body-area">
+      <table>
+        <tr><th>Page</th><th>Filtres disponibles</th></tr>
+        <tr><td>Commandes</td><td>Recherche (n°, client, email), statut, statut de paiement</td></tr>
+        <tr><td>Stock</td><td>Recherche (produit / SKU), catégorie, statut (Stock bas / OK)</td></tr>
+        <tr><td>Production</td><td>Recherche (lot, produit, SKU), catégorie, statut du lot</td></tr>
+        <tr><td>Utilisateurs</td><td>Recherche (nom, email), rôle</td></tr>
+      </table>
+      <div class="callout">
+        <b>Cas notable :</b> le filtre « Stock bas / OK » compare deux colonnes d'une même ligne — un cas que Prisma ne sait pas exprimer nativement. Une requête SQL brute <i>paramétrée</i> a été écrite spécifiquement pour ce filtre.
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 : KPI BASE -->
+  <section class="slide" data-eyebrow="KPI">
+    <div class="eyebrow">4 · Indicateurs</div>
+    <h2 class="title">KPI de base</h2>
+    <div class="body-area">
+      <div class="grid grid-4">
+        <div class="card"><h4>Stock</h4><p>Valeur totale, unités en stock, alertes de stock bas</p></div>
+        <div class="card"><h4>Ventes</h4><p>Commandes et chiffre d'affaires sur la période, panier moyen</p></div>
+        <div class="card"><h4>Catalogue</h4><p>Nombre de produits / SKU actifs</p></div>
+        <div class="card"><h4>Production</h4><p>Production réalisée sur la période</p></div>
+      </div>
+      <div class="card">
+        <h4>Calculées avec</h4>
+        <p><code>aggregate</code> / <code>groupBy</code> de Prisma — suffisant pour des comptages et sommes directes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 : KPI AVANCES -->
+  <section class="slide" data-eyebrow="KPI">
+    <div class="eyebrow">4 · Indicateurs</div>
+    <h2 class="title">KPI avancés</h2>
+    <div class="body-area">
+      <ul class="points">
+        <li><b>Rotation de stock</b> et jours de stock restant (DIO), reconstruits à partir du ledger de mouvements</li>
+        <li><b>Analyse ABC</b> : classement des produits par contribution cumulée au chiffre d'affaires (fonction fenêtrée SQL)</li>
+        <li><b>Rendement et taux de défauts</b> de production, par lot</li>
+        <li><b>Risque de rupture de stock</b> : stock actuel ÷ vitesse de vente sur 30 jours — assumé comme heuristique, pas une prévision</li>
+        <li><b>Tendance des ventes</b> sur moyenne mobile 7 jours</li>
+      </ul>
+      <div class="callout">Ces calculs multi-étapes utilisent des requêtes <code>$queryRaw</code> paramétrées — le générateur de requêtes standard de Prisma ne les exprime pas.</div>
+    </div>
+  </section>
+
+  <!-- 12 : SHOP -->
+  <section class="slide" data-eyebrow="Shop">
+    <div class="eyebrow">5 · Boutique en ligne</div>
+    <h2 class="title">Catalogue public &amp; panier</h2>
+    <div class="body-area">
+      <ul class="points">
+        <li>Navigation par catégorie, recherche, <b>pagination réelle côté serveur</b> — chaque page est une vraie requête à l'API</li>
+        <li>Badge « Nouveau » calculé dynamiquement (produit créé il y a moins de 14 jours)</li>
+        <li>Fiche produit avec sélection taille + couleur et stock disponible affiché</li>
+        <li>Panier persistant (compte ou session invité), fusionné automatiquement à la connexion</li>
+        <li>Chargements avec « skeleton loaders » sur toutes les pages — l'interface ne « saute » jamais</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 13 : SHOP ACCOUNT -->
+  <section class="slide" data-eyebrow="Shop">
+    <div class="eyebrow">5 · Boutique en ligne</div>
+    <h2 class="title">Compte client</h2>
+    <div class="body-area">
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>Historique « Mes commandes »</h4>
+          <p>Statuts visuellement distincts (couleur + icône) — plus lisible qu'un badge unique gris pour tous les statuts.</p>
+        </div>
+        <div class="card">
+          <h4>Connexion / inscription</h4>
+          <p>Formulaires refondus : icônes dans les champs, bouton d'affichage du mot de passe, message d'erreur en vraie alerte, illustration et arguments de confiance.</p>
+        </div>
+      </div>
+      <div class="callout">Gestion du profil (nom, email, photo) et changement de mot de passe, avec les mêmes standards d'interface que le tableau de bord.</div>
+    </div>
+  </section>
+
+  <!-- 14 : STRIPE FLOW -->
+  <section class="slide" data-eyebrow="Paiement">
+    <div class="eyebrow">6 · Paiement Stripe</div>
+    <h2 class="title">Un paiement réel, pas une simulation</h2>
+    <div class="body-area">
+      <div class="diagram">1. Client clique « Payer »
+2. POST /orders/checkout
+   → commande <span class="acc">EN_ATTENTE</span> créée <span class="dim">(le stock n'est pas touché ici)</span>
+   → session Stripe Checkout créée, redirection vers Stripe
+3. Le client paie sur la page Stripe (carte test)
+4. Stripe envoie un <span class="acc">webhook signé</span> : checkout.session.completed
+5. L'API vérifie la signature, décrémente le stock, écrit le
+   mouvement de stock, passe la commande à <span class="acc">PAYÉE</span> — tout dans UNE transaction</div>
+      <div class="callout"><b>Pourquoi si tard ?</b> si le client abandonne le paiement, la commande reste juste « en attente » sans avoir jamais réservé de stock.</div>
+    </div>
+  </section>
+
+  <!-- 15 : STRIPE IDEMPOTENCE -->
+  <section class="slide" data-eyebrow="Paiement">
+    <div class="eyebrow">6 · Paiement Stripe</div>
+    <h2 class="title">Idempotence du webhook</h2>
+    <div class="body-area">
+      <p class="lede">Stripe garantit « au moins une fois », pas « exactement une fois » — le même événement peut arriver deux fois.</p>
+      <div class="callout">
+        Le traitement du webhook ne s'exécute que si la commande est encore <code>PENDING</code>. Une deuxième réception du même événement ne fait donc rien : <b>le stock n'est jamais décrémenté deux fois</b> pour la même vente.
+      </div>
+      <div class="card">
+        <h4>Vérifié en pratique</h4>
+        <p>Rejeu manuel du même événement webhook pendant le développement — la commande reste stable, le stock ne bouge pas une seconde fois.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 : SECURITE ROLES -->
+  <section class="slide" data-eyebrow="Sécurité">
+    <div class="eyebrow">7 · Comptes &amp; rôles</div>
+    <h2 class="title">Trois rôles, une création encadrée</h2>
+    <div class="body-area">
+      <table>
+        <tr><th>Rôle</th><th>Accès</th></tr>
+        <tr><td><span class="pill">ADMIN</span></td><td>Tout le tableau de bord, y compris la gestion des utilisateurs</td></tr>
+        <tr><td><span class="pill ghost">STAFF</span></td><td>Tout sauf la gestion des utilisateurs</td></tr>
+        <tr><td><span class="pill ghost">CUSTOMER</span></td><td>Boutique uniquement — vérifié aussi côté serveur</td></tr>
+      </table>
+      <div class="callout">
+        Un admin crée un compte interne avec un <b>email obligatoirement <code>@plasti-matic.com</code></b> et un mot de passe temporaire généré, affiché <b>une seule fois</b>. L'utilisateur est bloqué sur « Mon compte » tant qu'il n'a pas défini son propre mot de passe.
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 : SECURITE SUPPRESSION -->
+  <section class="slide" data-eyebrow="Sécurité">
+    <div class="eyebrow">7 · Comptes &amp; rôles</div>
+    <h2 class="title">Blocage &amp; suppression</h2>
+    <div class="body-area">
+      <ul class="points">
+        <li><b>Bloquer</b> : le statut est revérifié en base à chaque requête — une session déjà ouverte est coupée immédiatement, pas seulement à la prochaine connexion</li>
+        <li><b>Supprimer</b> : suppression <b>réellement définitive</b> de la ligne en base</li>
+      </ul>
+      <div class="callout">
+        <b>Décision anticipée :</b> avant de supprimer un compte, son nom et son email sont recopiés sur ses commandes passées — « Commandes » continue d'afficher qui a acheté quoi, même après suppression du compte.
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 : TESTS -->
+  <section class="slide" data-eyebrow="Qualité">
+    <div class="eyebrow">8 · Qualité</div>
+    <h2 class="title">36 tests automatisés</h2>
+    <div class="body-area">
+      <table>
+        <tr><th>Package</th><th>Outil</th><th>Portée</th><th>Nb</th></tr>
+        <tr><td><code>packages/shared</code></td><td>Vitest</td><td>Règles de validation métier</td><td>11</td></tr>
+        <tr><td><code>apps/api</code> unitaire</td><td>Jest</td><td>Services (BDD simulée)</td><td>12</td></tr>
+        <tr><td><code>apps/api</code> intégration</td><td>Jest + Supertest</td><td>App réelle + vraie base PostgreSQL</td><td>6</td></tr>
+        <tr><td><code>apps/dashboard</code></td><td>Vitest + RTL</td><td>Composants d'interface</td><td>8</td></tr>
+        <tr><td><code>apps/shop</code></td><td>Vitest + RTL</td><td>Fiche produit</td><td>5</td></tr>
+      </table>
+      <div class="callout"><span class="mono">npm test</span> — tests rapides · <span class="mono">npm run test:e2e</span> — intégration avec vraie base de données</div>
+    </div>
+  </section>
+
+  <!-- 19 : BUGS -->
+  <section class="slide" data-eyebrow="Débogage">
+    <div class="eyebrow">9 · Étude de cas</div>
+    <h2 class="title">Un bug réel : la synchronisation du stock</h2>
+    <div class="body-area">
+      <div class="grid grid-3">
+        <div class="card"><h4>Symptôme</h4><p>Un lot complété à 0 unité, puis corrigé à 100, ne changeait rien au stock affiché.</p></div>
+        <div class="card"><h4>Cause</h4><p>Le code ne réagissait qu'au tout premier passage vers « Terminé » — jamais aux corrections suivantes.</p></div>
+        <div class="card"><h4>Correction</h4><p>Comparer « ce qui est reflété dans le stock » à « ce qui devrait l'être », et appliquer la différence.</p></div>
+      </div>
+      <div class="callout">Même logique corrigée pour la <b>pagination de la boutique</b>, qui plafonnait silencieusement à 100 produits au lieu d'interroger le serveur page par page.</div>
+    </div>
+  </section>
+
+  <!-- 20 : DEPLOIEMENT -->
+  <section class="slide" data-eyebrow="Déploiement">
+    <div class="eyebrow">10 · Déploiement</div>
+    <h2 class="title">Code source &amp; démonstration</h2>
+    <div class="body-area">
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>Dépôt Git privé</h4>
+          <p><code>github.com/mondher0/plasti-matic-platform</code></p>
+          <p><code>.env</code> et secrets exclus, <code>.env.example</code> versionné comme modèle</p>
+        </div>
+        <div class="card">
+          <h4>Comptes de démonstration</h4>
+          <p><code>admin@plastimatic.dz</code> — dashboard</p>
+          <p><code>client1@example.com</code> — boutique</p>
+          <p>Mot de passe : <code>password123</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21 : LIMITES -->
+  <section class="slide" data-eyebrow="Perspectives">
+    <div class="eyebrow">11 · Limites &amp; perspectives</div>
+    <h2 class="title">Ce qui reste à faire</h2>
+    <div class="body-area">
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>Limites assumées</h4>
+          <ul>
+            <li>Un seul entrepôt</li>
+            <li>Pas de coupons ni d'avis produits</li>
+            <li>Pas de réinitialisation de mot de passe par email</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Prochaine étape</h4>
+          <ul>
+            <li><b>Système de retours et remboursements</b> — remboursement Stripe et remise en stock</li>
+            <li>Notifications email de commande</li>
+            <li>Export comptable des KPI</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 : CONCLUSION -->
+  <section class="slide" data-eyebrow="Conclusion">
+    <div class="eyebrow">12 · Conclusion</div>
+    <h2 class="title">Bilan du stage</h2>
+    <div class="body-area">
+      <ul class="points">
+        <li>Une plateforme complète livrée : pilotage interne <b>et</b> boutique en ligne, sur une base technique cohérente</li>
+        <li>Un modèle de données où chaque mouvement de stock est traçable et reconstituable</li>
+        <li>Un vrai fournisseur de paiement externe intégré, avec asynchronisme et idempotence maîtrisés</li>
+        <li>Une vraie couverture de tests automatisés sur l'ensemble du projet</li>
+        <li>Des décisions techniques réfléchies plutôt que la solution la plus rapide</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 23 : MERCI -->
+  <section class="slide closing" data-eyebrow="Fin">
+    <div class="badge">Merci de votre attention</div>
+    <h1 style="font-size:clamp(32px,5vw,58px);">Des questions ?</h1>
+    <div class="credit" style="margin-top:40px; align-items:center;">
+      <span class="name">Rayan Benaksas</span>
+      <span>Stage M1 MIAGE — EURL Plasti Matic</span>
+    </div>
+  </section>
+
+</div>
+
+<div class="eyebrow-slidenum">
+  <div class="counter"><span id="curNum">1</span> / <span id="totalNum"></span></div>
+</div>
+<div class="chrome">
+  <button class="nav-btn" id="prevBtn" aria-label="Diapositive précédente">‹</button>
+  <button class="nav-btn" id="fsBtn" aria-label="Plein écran" title="Plein écran (F)">⛶</button>
+  <button class="nav-btn" id="nextBtn" aria-label="Diapositive suivante">›</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  document.getElementById('totalNum').textContent = total;
+  const progressEl = document.getElementById('progress');
+  const curNumEl = document.getElementById('curNum');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let idx = 0;
+  let animating = false;
+
+  try {
+    const saved = parseInt(sessionStorage.getItem('pm-deck-idx') || '0', 10);
+    if (saved >= 0 && saved < total) idx = saved;
+  } catch (e) {}
+
+  // Reveals a slide's own content (bullet points, cards, the diagram, the
+  // callout…) one beat after another instead of all at once — every time
+  // the slide is (re-)entered, forward or backward, the same way a
+  // presenter's "build" animation replays if you step back to a slide.
+  function reveal(slide) {
+    if (reduceMotion) return;
+    const body = slide.querySelector('.body-area');
+    if (!body) return;
+    let i = 0;
+    const animate = (el) => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = 'revealUp .5s cubic-bezier(.2,.7,.3,1) both';
+      el.style.animationDelay = (i++ * 70) + 'ms';
+    };
+    Array.from(body.children).forEach((child) => {
+      if (child.matches('ul.points, ol.points, .grid')) {
+        Array.from(child.children).forEach(animate);
+      } else {
+        animate(child);
+      }
+    });
+  }
+
+  function updateChrome() {
+    curNumEl.textContent = idx + 1;
+    progressEl.style.width = ((idx + 1) / total * 100) + '%';
+    try { sessionStorage.setItem('pm-deck-idx', String(idx)); } catch (e) {}
+  }
+
+  function go(delta) {
+    const next = Math.max(0, Math.min(total - 1, idx + delta));
+    if (next === idx || animating) return;
+    const dir = next > idx ? 1 : -1;
+    const oldSlide = slides[idx];
+    const newSlide = slides[next];
+    idx = next;
+    updateChrome();
+
+    if (reduceMotion) {
+      oldSlide.classList.remove('active');
+      newSlide.classList.add('active');
+      reveal(newSlide);
+      return;
+    }
+
+    animating = true;
+    newSlide.classList.add(dir > 0 ? 'enter-from-right' : 'enter-from-left');
+    void newSlide.offsetWidth; // commit the off-position before animating in
+    requestAnimationFrame(() => {
+      newSlide.classList.remove('enter-from-right', 'enter-from-left');
+      newSlide.classList.add('active');
+      oldSlide.classList.remove('active');
+      oldSlide.classList.add(dir > 0 ? 'exit-left' : 'exit-right');
+    });
+    setTimeout(() => {
+      oldSlide.classList.remove('exit-left', 'exit-right');
+      animating = false;
+      reveal(newSlide);
+    }, 460);
+  }
+
+  function jumpTo(target) {
+    if (target === idx) return;
+    slides[idx].classList.remove('active');
+    idx = target;
+    slides[idx].classList.add('active');
+    updateChrome();
+    reveal(slides[idx]);
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => go(-1));
+  document.getElementById('nextBtn').addEventListener('click', () => go(1));
+  document.getElementById('fsBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    else document.exitFullscreen().catch(() => {});
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    else if (e.key === 'Home') { jumpTo(0); }
+    else if (e.key === 'End') { jumpTo(total - 1); }
+    else if (e.key.toLowerCase() === 'f') { document.getElementById('fsBtn').click(); }
+  });
+
+  // The markup hardcodes .active on the cover slide so the deck still shows
+  // something sane if this script never runs — clear that before applying
+  // whichever slide sessionStorage actually restored, so a mid-deck refresh
+  // can't leave two slides marked active at once.
+  slides.forEach((s) => s.classList.remove('active'));
+  slides[idx].classList.add('active');
+  updateChrome();
+  reveal(slides[idx]);
+</script>
+</body>
+</html>
